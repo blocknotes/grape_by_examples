@@ -1,0 +1,12 @@
+source 'https://rubygems.org'
+
+# ruby '2.3.6'
+
+gem 'thin'
+gem 'pry'
+
+gem 'grape'
+gem 'grape-entity'
+
+gem 'sequel'
+gem 'sqlite3'
