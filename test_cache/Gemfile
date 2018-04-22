@@ -1,0 +1,11 @@
+source 'https://rubygems.org'
+
+# ruby '2.3.6'
+
+gem 'thin'
+
+gem 'grape'
+
+gem 'pry'
+
+gem 'rack-cache'
