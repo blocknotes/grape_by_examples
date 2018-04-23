@@ -25,10 +25,6 @@ class MyAPI::Main < Grape::API
   prefix :api
   rescue_from :all
 
-  before do
-    header 'Content-Type', 'application/json'
-  end
-
   resource :posts do
     get do  # /api/v1/posts
       posts = [OpenStruct.new({ id: 1, title: 'A test', content: 'Just some content', dt: Date.today })]
