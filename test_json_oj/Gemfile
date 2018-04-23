@@ -6,4 +6,5 @@ gem 'thin'
 gem 'pry'
 
 gem 'grape'
+gem 'grape-entity'
 gem 'oj'
