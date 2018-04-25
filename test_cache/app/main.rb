@@ -1,5 +1,3 @@
-# rackup -p 3000
-
 require 'grape'
 require 'pry'
 

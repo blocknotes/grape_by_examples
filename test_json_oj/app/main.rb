@@ -1,13 +1,13 @@
-# rackup -p 3000
-
 require 'grape'
 require 'grape-entity'
 require 'oj'
 require 'pry'
 
-module MyAPI::OjSerialize
-  def to_json( options = nil )
-    Oj.dump serializable_hash.to_h, mode: :compat
+module MyAPI
+  module OjSerialize
+    def to_json( options = nil )
+      Oj.dump serializable_hash.to_h, mode: :compat
+    end
   end
 end
 
@@ -27,7 +27,10 @@ class MyAPI::Main < Grape::API
 
   resource :posts do
     get do  # /api/v1/posts
-      posts = [OpenStruct.new({ id: 1, title: 'A test', content: 'Just some content', dt: Date.today })]
+      posts = [
+        OpenStruct.new({ id: 1, title: 'A test', content: 'Just some content', dt: Date.today }),
+        OpenStruct.new({ id: 2, title: 'Another test', content: 'Some other content', dt: Date.yesterday }),
+      ]
       MyAPI::PostEntity.represent posts, only: [:id, :title]
     end
 
@@ -35,7 +38,11 @@ class MyAPI::Main < Grape::API
       requires :id, type: Integer, desc: 'The id'
     end
     get ':id' do  # /api/v1/posts/:id
-      post = OpenStruct.new({ id: 1, title: 'A test', content: 'Just some content', dt: Date.today })
+      post = case params[:id]
+        when 1 then OpenStruct.new({ id: 1, title: 'A test', content: 'Just some content', dt: Date.today })
+        when 2 then OpenStruct.new({ id: 2, title: 'Another test', content: 'Some other content', dt: Date.yesterday })
+        else nil
+      end
       MyAPI::PostEntity.represent post
     end
  end
