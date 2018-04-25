@@ -45,7 +45,7 @@ class MyAPI::Main < Grape::API
       end
       MyAPI::PostEntity.represent post
     end
- end
+  end
 
   route :any, '*path' do
     error!( 'not found', 404 )
