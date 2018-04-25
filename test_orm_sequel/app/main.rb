@@ -9,6 +9,7 @@ class MyAPI::Main < Grape::API
   prefix :api
   rescue_from :all
 
+  # posts API
   resource :posts do
     get do  # /api/v1/posts
       rows = MyAPI::Book.all
