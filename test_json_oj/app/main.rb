@@ -59,7 +59,6 @@ module MyAPI
   # --- Method 3
   class PostModel
     include Grape::Entity::DSL
-    include GrapeEntityOJ
     include GrapeEntityDSLOJ
 
     attr_accessor :id, :title, :content, :dt
@@ -92,12 +91,12 @@ module MyAPI
           present posts, only: [:id, :title]
         elsif params[:m] == '3'  # /api/v1/posts?m=3
           puts '>>> Method 3'
-          posts = [
+          [
             PostModel.new({ id: 1, title: 'A test', content: 'Just some content', dt: Date.today }),
             PostModel.new({ id: 2, title: 'Another test', content: 'Some other content', dt: Date.yesterday }),
             PostModel.new({ id: 3, title: 'Last test', content: 'The final content', dt: Date.tomorrow }),
           ]
-          present posts, only: [:id, :title]
+          # NOTE: only...?
         else
           puts '>>> Method 1'
           posts = [
