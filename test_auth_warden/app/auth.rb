@@ -37,4 +37,12 @@ module Auth
       return user.to_h if user
     end
   end
+
+  def Auth.sign_up( user_data )
+    user = User.create user_data
+    if user
+      user = User.update user.id, { token: SecureRandom.urlsafe_base64(80, false) }
+      return user.to_h if user
+    end
+  end
 end

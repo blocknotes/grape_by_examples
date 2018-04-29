@@ -15,17 +15,32 @@ USERS = [
 ]  # SAMPLE DATA
 
 class User
-  attr_accessor :id
+  # attr_accessor :id
 
   class << self
-    def find( attributes )
+    def create(attributes)
+      return nil unless attributes[:username]
+      user = find username: attributes[:username]
+      if user
+        nil
+      else
+        user = {
+          id: USERS.count + 1,
+          username: attributes[:username]
+        }
+        USERS << user
+        OpenStruct.new(user)
+      end
+    end
+
+    def find(attributes)
       USERS.each do |user|
         return OpenStruct.new(user) if (attributes.to_a - user.to_a).empty?
       end
       nil
     end
 
-    def update( id, attributes )
+    def update(id, attributes)
       USERS.each do |user|
         if user[:id] == id
           user.merge! attributes.dup.symbolize_keys
@@ -45,10 +60,19 @@ class MyAPI::Main < Grape::API
 
   use Rack::Session::Pool, MyAPI::SESSION
 
-  Auth.init( self )
+  Auth.init(self)
+
+  # TEST: curl -v -X POST 'http://127.0.0.1:3000/api/v1/register' --data 'username=Test'
+  params do
+    requires :username, type: String, desc: 'Login username'
+  end
+  post '/register' do  # /api/v1/register
+    user = Auth.sign_up(params)
+    user ? user.to_h : { error: 'Invalid access' }
+  end
 
   resource :tokens do
-    # TEST1: curl -v -X POST 'http://127.0.0.1:3000/api/v1/tokens' --data 'username=Mat'
+    # TEST: curl -v -X POST 'http://127.0.0.1:3000/api/v1/tokens' --data 'username=Mat'
     params do
       requires :username, type: String, desc: 'Login username'
     end
@@ -66,7 +90,7 @@ class MyAPI::Main < Grape::API
     end
   end
 
-  # TEST1: curl -v 'http://127.0.0.1:3000/api/v1/authors' --header 'auth_token: aaa'
+  # TEST: curl -v 'http://127.0.0.1:3000/api/v1/authors' --header 'auth_token: aaa'
   resource :authors do
     before do
       env['warden'].authenticate!
@@ -76,7 +100,7 @@ class MyAPI::Main < Grape::API
     end
   end
 
-  # TEST1: curl -v 'http://127.0.0.1:3000/api/v1/posts' --header 'auth_token: aaa'
+  # TEST: curl -v 'http://127.0.0.1:3000/api/v1/posts' --header 'auth_token: aaa'
   resource :posts do
     before do
       env['warden'].authenticate!
