@@ -58,7 +58,7 @@ class MyAPI::Main < Grape::API
   prefix :api
   rescue_from :all
 
-  use Rack::Session::Pool, MyAPI::SESSION
+  # use Rack::Session::Pool, MyAPI::SESSION
 
   Auth.init(self)
 
