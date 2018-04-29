@@ -19,4 +19,12 @@ module Auth
       end
     end
   end
+
+  def Auth.sign_in( user_data )
+    user = User.find user_data
+    if user
+      user = User.update user.id, { token: 'aaa' }  # TODO: generate a valid token
+      return user.to_h if user
+    end
+  end
 end

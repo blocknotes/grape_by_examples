@@ -6,11 +6,11 @@ require_relative 'auth'
 USERS = [
   {
     id: 1,
-    token: 'aaa'
+    username: 'Mat'
   },
   {
     id: 2,
-    token: 'bbb'
+    username: 'Jim'
   }
 ]  # SAMPLE DATA
 
@@ -24,6 +24,16 @@ class User
       end
       nil
     end
+
+    def update( id, attributes )
+      USERS.each do |user|
+        if user[:id] == id
+          user.merge! attributes.dup.symbolize_keys
+          return OpenStruct.new(user)
+        end
+      end
+      nil
+    end
   end
 end
 
@@ -31,11 +41,22 @@ class MyAPI::Main < Grape::API
   version 'v1', using: :path
   format :json
   prefix :api
-  # rescue_from :all
+  rescue_from :all
 
   use Rack::Session::Pool, MyAPI::SESSION
 
   Auth.init( self )
+
+  # TEST1: curl -v -X POST 'http://127.0.0.1:3000/api/v1/tokens' --data 'username=Mat'
+  resource :tokens do
+    params do
+      requires :username, type: String, desc: 'Login username'
+    end
+    post do  # /api/v1/tokens
+      user = Auth.sign_in(params.slice(:username).symbolize_keys)
+      user ? user.to_h : { error: 'Invalid access' }
+    end
+  end
 
   # TEST1: curl -v 'http://127.0.0.1:3000/api/v1/authors' --header 'auth_token: aaa'
   resource :authors do
@@ -43,18 +64,17 @@ class MyAPI::Main < Grape::API
       env['warden'].authenticate!
     end
     get do  # /api/v1/authors
-      puts '>>> A new GET request...', env['warden'].user.inspect
-      { data: "Some authors - User: #{env['warden'].user.id}" }
+      { message: "Some authors - User: #{env['warden'].user.id}" }
     end
   end
 
+  # TEST1: curl -v 'http://127.0.0.1:3000/api/v1/posts' --header 'auth_token: aaa'
   resource :posts do
     before do
       env['warden'].authenticate!
     end
     get do  # /api/v1/posts
-      puts '>>> A new GET request...', env['warden'].user.inspect
-      { data: "Some posts - User: #{env['warden'].user.id}" }
+      { message: "Some posts - User: #{env['warden'].user.id}" }
     end
   end
 
