@@ -1,3 +1,5 @@
+require 'securerandom'
+
 module Auth
   def Auth.init( app )
     app.use Warden::Manager do |manager|
@@ -23,7 +25,7 @@ module Auth
   def Auth.sign_in( user_data )
     user = User.find user_data
     if user
-      user = User.update user.id, { token: 'aaa' }  # TODO: generate a valid token
+      user = User.update user.id, { token: SecureRandom.urlsafe_base64(80, false) }
       return user.to_h if user
     end
   end
