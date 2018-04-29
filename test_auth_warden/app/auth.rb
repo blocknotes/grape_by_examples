@@ -29,4 +29,12 @@ module Auth
       return user.to_h if user
     end
   end
+
+  def Auth.sign_out( user_data )
+    user = User.find user_data
+    if user
+      user = User.update user.id, { token: nil }
+      return user.to_h if user
+    end
+  end
 end

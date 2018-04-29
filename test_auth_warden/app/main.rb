@@ -47,13 +47,21 @@ class MyAPI::Main < Grape::API
 
   Auth.init( self )
 
-  # TEST1: curl -v -X POST 'http://127.0.0.1:3000/api/v1/tokens' --data 'username=Mat'
   resource :tokens do
+    # TEST1: curl -v -X POST 'http://127.0.0.1:3000/api/v1/tokens' --data 'username=Mat'
     params do
       requires :username, type: String, desc: 'Login username'
     end
     post do  # /api/v1/tokens
       user = Auth.sign_in(params.slice(:username).symbolize_keys)
+      user ? user.to_h : { error: 'Invalid access' }
+    end
+
+    params do
+      requires :token, type: String, desc: 'Auth token'
+    end
+    delete do  # /api/v1/tokens
+      user = Auth.sign_out(params.slice(:token).symbolize_keys)
       user ? user.to_h : { error: 'Invalid access' }
     end
   end
