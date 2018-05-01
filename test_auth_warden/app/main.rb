@@ -12,34 +12,10 @@ class MyAPI::Main < Grape::API
 
   # use Rack::Session::Pool, MyAPI::SESSION
 
-  Auth.init(self)
-
-  # TEST: curl -v -X POST 'http://127.0.0.1:3000/api/v1/register' --data 'username=Test'
-  params do
-    requires :username, type: String, desc: 'Login username'
-  end
-  post '/register' do  # /api/v1/register
-    user = Auth.sign_up(params)
-    user ? user.to_h : { error: 'Invalid access' }
-  end
+  MyAPI::Auth.init(self)
 
   resource :tokens do
-    # TEST: curl -v -X POST 'http://127.0.0.1:3000/api/v1/tokens' --data 'username=Mat'
-    params do
-      requires :username, type: String, desc: 'Login username'
-    end
-    post do  # /api/v1/tokens
-      user = Auth.sign_in(params.slice(:username).symbolize_keys)
-      user ? user.to_h : { error: 'Invalid access' }
-    end
-
-    params do
-      requires :token, type: String, desc: 'Auth token'
-    end
-    delete do  # /api/v1/tokens
-      user = Auth.sign_out(params.slice(:token).symbolize_keys)
-      user ? user.to_h : { error: 'Invalid access' }
-    end
+    MyAPI::Auth.setup_routes(self)
   end
 
   # TEST: curl -v 'http://127.0.0.1:3000/api/v1/authors' --header 'auth_token: aaa'
