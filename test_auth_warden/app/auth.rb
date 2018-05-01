@@ -9,7 +9,7 @@ class MyAPI::Auth
         end
 
         def authenticate!
-          if params['username'] && params['password']
+          if params['username'] && params['password']  # Login by username and password
             user = MyAPI::User.find params.symbolize_keys.slice(:username, :password)
             if user
               user.update({ token: SecureRandom.urlsafe_base64(80, false), token_updated_at: Time.now })
@@ -17,7 +17,7 @@ class MyAPI::Auth
             else
               fail!('Invalid credentials')
             end
-          else
+          else  # Login by token
             token = params['auth_token'] || env['HTTP_AUTH_TOKEN'] || env['rack.request.query_hash']['AUTH_TOKEN']
             if token
               user = MyAPI::User.find(token: token)
@@ -40,19 +40,13 @@ class MyAPI::Auth
           config.failure_app = ->( env ) {
             [401, { 'Content-Type' => 'application/json' }, [{ error: env['warden'].message || 'Unauthorized' }.to_json]]
           }
-          config.scope_defaults :default,
-            strategies: [:token],
-            action: 'auth/unauthenticated'
-
-          if defined? MyAPI::AUTH_SESSION
-            config.serialize_into_session do |user|
-              user.token
-            end
-
-            config.serialize_from_session do |token|
-              MyAPI::User.find(token: token)
-            end
+          config.serialize_into_session do |user|
+            user.token
           end
+          config.serialize_from_session do |token|
+            MyAPI::User.find(token: token)
+          end
+          config.scope_defaults :default, store: false, strategies: [:token], action: 'auth/unauthenticated'
         end
       end
     end
@@ -89,17 +83,16 @@ class MyAPI::Auth
           env['warden'].authenticate!
         end
         delete do  # /api/v1/tokens
-          # p env['warden'].raw_session.inspect
           env['warden'].user.update({ token: nil, token_updated_at: nil })
-          env['warden'].logout
+          env['warden'].logout if env['warden'].raw_session
           { status: 'ok' }
         end
       end
     end
 
-    def sign_up(user_data)
-      user = MyAPI::User.create user_data
-      MyAPI::User.update user.id, { token: SecureRandom.urlsafe_base64(80, false), token_updated_at: Time.now } if user  # returns user data
-    end
+    # def sign_up(user_data)
+    #   user = MyAPI::User.create user_data
+    #   MyAPI::User.update user.id, { token: SecureRandom.urlsafe_base64(80, false), token_updated_at: Time.now } if user  # returns user data
+    # end
   end
 end
