@@ -1,16 +1,21 @@
 require 'grape'
 require 'warden'
 require 'pry'
+require_relative 'config'
 require_relative 'user'
 require_relative 'auth'
 
 class MyAPI::Main < Grape::API
-  version 'v1', using: :path
   format :json
   prefix :api
-  rescue_from :all
+  version 'v1', using: :path
+  # rescue_from :all
 
-  # use Rack::Session::Pool, MyAPI::SESSION
+  # if defined? MyAPI::AUTH_SESSION
+  #   use Rack::Session::Pool, MyAPI::AUTH_SESSION
+  #   Rack::Session::Pool.new( self, secret: MyAPI::AUTH_SESSION[:secret] )
+  # end
+  # Rack::Session::Pool.new( self, secret: MyAPI::AUTH_SESSION[:secret] )
 
   MyAPI::Auth.init(self)
 
